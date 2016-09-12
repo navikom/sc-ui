@@ -1,20 +1,21 @@
 
 var engine = require('engine'),
-    
+
     Panel = require('../ui/Panel'),
     Layout = require('../ui/Layout'),
 
     BorderLayout = require('../ui/layouts/BorderLayout'),
     FlowLayout = require('../ui/layouts/FlowLayout'),
     StackLayout = require('../ui/layouts/StackLayout'),
-    
+
     HeaderPane = require('../ui/panes/HeaderPane'),
     LeftPane = require('../ui/panes/LeftPane'),
     RightPane = require('../ui/panes/RightPane'),
     BottomPane = require('../ui/panes/BottomPane'),
     VitalsPane = require('../ui/panes/VitalsPane'),
     ShipPane = require('../ui/panes/ShipPane'),
-      
+    Leaderboard = require('../ui/panes/Leaderboard'),
+
     Alert = require('../ui/components/Alert'),
     AlertMessage = require('../ui/components/AlertMessage'),
     Modal = require('../ui/components/Modal'),
@@ -47,7 +48,7 @@ GUIState.prototype.preload = function() {
   this.game.load.image('deck', 'imgs/game/tilesets/deck-mini.png');
   this.game.load.image('wall', 'imgs/game/tilesets/wall-mini.png');
   this.game.load.image('grid', 'imgs/game/tilesets/grid-mini.png');
-    
+
   // load ship tilemap
   this.game.load.tilemap('ship-tilemap', 'data/ship-mini.json');
 
@@ -78,9 +79,13 @@ GUIState.prototype.create = function() {
   this.centerPanel = new Panel(game, new BorderLayout(0, 0));
   this.basePanel = new Panel(game, new BorderLayout(0, 0));
   this.basePanel.setPadding(6);
-      
+
   this.leftPane = new LeftPane(game);
   this.rightPane = new RightPane(game);
+
+  //added leaderBoard pane
+  this.leaderBoard = new Leaderboard(game);
+
   // this.bottomPane = new BottomPane(game);
   // this.vitalsPane = new VitalsPane(game);
 
@@ -112,9 +117,15 @@ GUIState.prototype.create = function() {
   // this.centerPanel.addPanel(Layout.CENTER, this.shipPanel);
   this.centerPanel.addPanel(Layout.LEFT, this.leftPane);
   // this.centerPanel.addPanel(Layout.RIGHT, this.targetPanel);
-  
+
   this.basePanel.addPanel(Layout.TOP, this.topPanel);
   // this.basePanel.addPanel(Layout.BOTTOM, this.bottomPanel);
+
+  // leaderBoard pane added to canvas
+  this.leaderBoardPanel = new Panel(game, new FlowLayout(Layout.RIGHT, Layout.TOP, Layout.HORIZONTAL, 6));
+  this.leaderBoardPanel.addPanel(Layout.NONE, this.leaderBoard);
+  this.leaderBoardPanel.visible = true;
+
 
   this.root = new Panel(game, new StackLayout());
   this.root.setSize(game.width, game.height);
@@ -126,6 +137,7 @@ GUIState.prototype.create = function() {
   this.root.addPanel(Layout.STRETCH, this.basePanel);
   this.root.addPanel(Layout.STRETCH, this.centerPanel);
   this.root.addPanel(Layout.STRETCH, this.modalComponent);
+  this.root.addPanel(Layout.STRETCH, this.leaderBoardPanel);
 
   // add root to stage
   this.game.stage.addChild(this.root);
@@ -143,18 +155,18 @@ GUIState.prototype.create = function() {
 
 GUIState.prototype.login = function() {
   // if(this.auth.isUser()) {
-    this.centerPanel.visible = true;
-    this.centerPanel.invalidate();
-    // this.bottomPanel.visible = true;
-    // this.bottomPanel.invalidate();
-    this.topPanel.visible = true;
-    this.topPanel.invalidate();
+  this.centerPanel.visible = true;
+  this.centerPanel.invalidate();
+  // this.bottomPanel.visible = true;
+  // this.bottomPanel.invalidate();
+  this.topPanel.visible = true;
+  this.topPanel.invalidate();
   // } else {
   //   this.bottomPanel.visible = false;
   //   this.centerPanel.visible = false;
-    // this.registrationForm = new RegistrationForm(game);
-    // this.loginForm = new LoginForm(game);
-    // this.game.on('gui/loggedin', this._loggedin, this);
+  // this.registrationForm = new RegistrationForm(game);
+  // this.loginForm = new LoginForm(game);
+  // this.game.on('gui/loggedin', this._loggedin, this);
   // }
   if(this.modalComponent.visible) {
     this.modal(false);
@@ -167,8 +179,8 @@ GUIState.prototype.refresh = function() {
 
 GUIState.prototype.toggle = function(force) {
   this.hud.visible = this.root.visible =
-    force !== undefined ? force : !this.root.visible;
-  
+      force !== undefined ? force : !this.root.visible;
+
   // repaint gui
   if(this.root.visible) {
     this.root.invalidate();
